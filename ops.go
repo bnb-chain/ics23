@@ -20,10 +20,15 @@ import (
 
 // validate the IAVL Ops
 func z(op opType, b int) error {
-	r := bytes.NewReader(op.GetPrefix())
+	prefix := op.GetPrefix()
+	if len(prefix) < 1 {
+		return fmt.Errorf("wrong prefix in op")
+	}
 
-	values := []int64{}
-	for i := 0; i < 3; i++ {
+	values := []int64{int64(prefix[0])} // the first byte is height
+
+	r := bytes.NewReader(prefix[1:])
+	for i := 1; i < 3; i++ {
 		varInt, err := binary.ReadVarint(r)
 		if err != nil {
 			return err
@@ -91,7 +96,6 @@ func (op *LeafOp) CheckAgainstSpec(spec *ProofSpec) error {
 	lspec := spec.LeafSpec
 
 	if g(spec) {
-		fmt.Println("Dragonberry Active")
 		err := z(op, 0)
 		if err != nil {
 			return err
@@ -207,7 +211,8 @@ type opType interface {
 }
 
 // doLengthOp will calculate the proper prefix and return it prepended
-//   doLengthOp(op, data) -> length(data) || data
+//
+//	doLengthOp(op, data) -> length(data) || data
 func doLengthOp(lengthOp LengthOp, data []byte) ([]byte, error) {
 	switch lengthOp {
 	case LengthOp_NO_PREFIX:
