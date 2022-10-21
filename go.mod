@@ -1,4 +1,4 @@
-module github.com/confio/ics23/go
+module github.com/bnb-chain/ics23
 
 go 1.14
 
